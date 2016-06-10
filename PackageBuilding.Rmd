@@ -9,6 +9,7 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 
 # Notes
 
+- [Github Repo](https://github.com/JidduAlexander/PackageBuilding)
 - In this document (\*) means that there is a full example of usage in R in the Appendix 1: Examples. The name of the example is the same as the text before (\*).
 - I've learned everything in this post from Hadley Wickham's books and Master R Developer Workshop. If this post interests you I strongly advise you to buy [Advanced R](http://adv-r.had.co.nz/) and [R Packages](http://r-pkgs.had.co.nz/), and to join a workshop. 
 - In this post I share many keyboard shortcuts for working on Windows. For a complete overview for Mac and Windows press 'Alt Shift K' (windows) or 'Option Shift K' (Mac) in RStudio or see the backside of the Rstudio IDE Cheat Sheet. This and the Package Development Cheat Sheet are two of many available on the [RStudio Cheat Sheet üage](https://www.rstudio.com/resources/cheatsheets/).
