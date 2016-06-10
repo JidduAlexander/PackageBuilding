@@ -1,0 +1,361 @@
+---
+title: "Package Building"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+# Notes
+
+- In this document (\*) means that there is a full example of usage in R in the Appendix 1: Examples. The name of the example is the same as the text before (\*).
+- I've learned everything in this post from Hadley Wickham's books and Master R Developer Workshop. If this post interests you I strongly advise you to buy [Advanced R](http://adv-r.had.co.nz/) and [R Packages](http://r-pkgs.had.co.nz/), and to join a workshop. 
+- In this post I share many keyboard shortcuts for working on Windows. For a complete overview for Mac and Windows press 'Alt Shift K' (windows) or 'Option Shift K' (Mac) in RStudio or see the backside of the Rstudio IDE Cheat Sheet. This and the Package Development Cheat Sheet are two of many available on the [RStudio Cheat Sheet üage](https://www.rstudio.com/resources/cheatsheets/).
+
+# Introduction
+
+Six main components of a package:
+
+- Description
+- R (code)
+- Man (help)
+- Data
+- Vignettes
+- Tests
+
+We'll use devtools for building packages.
+
+```{r}
+if (!require("devtools")) install.packages("devtools")
+library(devtools)
+```
+
+Come up with a name and create your package. 
+
+You can create your package with devtools or RStudio.
+```{r}
+devtools::create("folderpath/package")
+devtools::setup("existing/path/")
+```
+
+devtools::create("name"), creates name.Rproj, and R/ folder for code, a description file, and a namespace.
+
+Open the Rproj file and work in your project.
+
+To load a package locally use load_all() from the devtools package or press 'Ctrl Shift L'
+```{r}
+devtools::load_all() # Or press 'Ctrl Shift L'
+```
+
+# R (code)
+
+- Write R code and save in the R/ folder.
+- Load (load_all()) your package into the session
+- Test/Try the code.
+
+Advice for writing code in a package.
+
+- Write reusable function without side effects. Preferably pure functions (output depends on input only and makes no changes to the state of the world)
+- Avoid library(), require() and install.packages(), instead use DESCRIPTION (see next section Description)
+- Avoid print() instead use message()                    (*)
+- Avoid source() instead just put the files in R/
+- Isolate options with on.exit()                         (*)
+- Isolate: read.csv(), Sys.time(), plot(), write.csv()
+- Good practise to clean up with on.exit()               (*)
+- Don't mix side-effects and computation                 (*)
+
+# Description
+
+- License      : Generally CCo. Otherwise maybe MIT or GPL.
+- Imports  (*) : Packages that it relies on to function. Automatically installed when installing this package.
+- Suggests (*) : Packages that it likes to have around. Not installed automatically.
+
+The reason to use Imports and Suggests instead of library() and require() has to with the fact that library() affescts the search path and the others load a namespace (loadNamespace()) that doesn't.
+
+To add packages to your import or suggest list in the description use use_packages().
+
+```{r}
+# Add dplyr to imports or suggests
+devtools::use_package("dplyr")
+devtools::use_package("dplyr", "suggests")
+```
+
+If you haven't installed thos packages yourself than devtools::load\_all() will fail. It doesn't install the packages for you like install.package() does. Use devtools::install\_deps(deps = TRUE) to install all Imports and Suggests packages.
+
+```{r}
+devtools::install_deps(deps = TRUE)
+```
+
+# Man (help)
+
+Use the Roxygen2 package to create the manual. 
+
+- Write R code with Roxygen2 commenting
+- Generate Rd file with devtools::document() or press 'Ctrl Shift D'
+- Optionally (better) Build package and restart R with 'Ctrl Shift B'
+- Preview help file with ?topicname
+
+Write your R comments like this: 
+```{r}
+#' Function Title (Title Section)
+#'
+#' Fucntion description (Description section)
+#'
+#' Function details (Details section)
+#'
+#' @param x And description of input parameter x (Arguments Section)
+#' @param y And description of input parameter y (Arguments Section)
+#' @export (determines the namespace to be external)
+#' @seealso Point to other important function for example
+#' @return Dsecription of the returned value (Describe Outputs Section)
+#' @examples (Examples Section)
+#' a <- fun(x, y)
+fun <- function(x, y = 0) {
+  # Body of function
+}
+```
+
+- You can insert a Roxygen skeleton in the Code tab in RStudio or press 'Alt Shift R' (not sure this works)
+- Rd uses special text formatting. For example: \code{}, \eqn{}, \emph{}, \strong{}, \itemize{}, \enumerate{}, \link{}, \link[]{}, \url{}, \href{}{}, \email{}
+
+Then, to generate the Rd file.
+```{r}
+devtools::document() # or press 'Ctrl Shift D'
+```
+
+It's better practise to build entire package and restart R before checking the documentation. Do this by pressing 'Ctrl Shift B'. If that doesn't work, I believe devtools::build() builts the package. 
+
+You can check the documentation with check\_man(). This returns nothing when it's good. Iterate between check\_man() and document() to fix all errors.
+```{r}
+devtools::check_man()
+```
+
+To document other objects chack online.
+
+- Data              : [r-pkgs.had.co.nz/data.html#documenting-data](http://r-pkgs.had.co.nz/data.html#documenting-data)
+- Classes & Methods : [r-pkgs.had.co.nz/man.html#man-classes](http://r-pkgs.had.co.nz/man.html#man-classes)
+- Packages          : [r-pkgs.had.co.nz/man.html#man-packages](http://r-pkgs.had.co.nz/man.html#man-packages)
+
+# Vignettes
+
+To start a vignette use devtools::use\_vignette("name"). It adds knitr to the Description Suggests and VignettweBuilder. It creates a vignettes folder and drafts vignettes/name.Rmd
+
+```{r}
+devtools::use_vignette("name")
+```
+
+Open a new R Markdown documents and choose Package Vignette (HTML) from the 'From Templates' option. The output type of the R Markdown document is rmarkdown::html_vignette.
+
+- Modify and preview your file (standard knitr), keyboard shortcut 'Ctrl Shift K', untill your satisfied.
+- Preview whole package with install(build_vignettes = TRUE) and browsevignettes()
+
+```{r}
+devtools::install(build_vignettes = TRUE)
+browseVignettes()
+```
+
+# Tests
+
+This section assumes you know how to debug code. traceback(), browser(), options(error = recover), options(warn = 2)
+
+Two types of testing workflow:
+
+- 3 step iteration: Write code. Load the code with devtools::load_all(). Test code in the console.
+- 2 step iteration: Write code. Run automated tests with devtools::test() (or press 'Ctrl Shift T')
+
+Use the testthat packages to write automated tests. It has expectation functions that will test for an expectation. Use the function test\_that("Description of test",{expectation function}). Expectation functions are in the form expect_*(). Enter two arguments, a function (with it's own arguments) and an expected output.
+
+- expect\_equal()      : all.equal(), ignores floating point differences
+- expect\_identical()  : identical(), more strict than equal
+- expect\_equivalent() : like equal, but ignores differences in attributes
+- expect\_is()         : inherits from a class
+- expect\_true()       : expects true, also comes as expect\_false()
+- expect\_matches()    : any value match the regular expression
+- expect\_output()     : output match regular expression
+- expect\_message()    : expects a message
+- expect\_warning()    : expects a warning
+- expect\_error()      : expects an error
+
+```{r}
+test_that("Expect error if input is not numeric", {
+expect_error(sum("a", 3), "invalid 'type' (character) of argument")
+})
+test_that("Expect that the sum of 3 + 4 is 7", {
+expect_equal(sum(3, 4), 7)
+})
+```
+
+Good practise:
+
+- When you find a bug, be able to reproduce it. Write a test for it, because the bug might 'creep' back into your code in future changes.
+- Test complicated parts of your code.
+
+# Namespace
+
+Divides functions into two types:
+
+- Internal - Used by package only  - Optional documentation - Easy to adapt/change
+- External - Used by outside users - Requires documentation - Others depend on you not changing it
+
+See the 'Man' section for Roxygen code to create an external function.
+```{r}
+#' @export
+```
+
+
+
+# Release
+
+
+# Appendix 1: Examples
+
+## Avoid print() instead use message()
+
+```{r}
+fun <- function(x = 3, quiet = NULL, ...) {
+
+  if (!quiet) message("Your message", x)
+
+  if (is.null(x)) {
+    by <- ...
+    message("Joining by ", paste(by, collapse = ", "))
+  }
+}
+```
+
+
+## Isolate options with on.exit()
+
+```{r}
+# Don't set these options globally. Not good:
+options(stringsAsFactors = FALSE)
+read.csv(path)
+
+# Using on.exit() always executes before the function end, so it's okay.
+old <- options(stringsAsFactors = FALSE)
+on.exit(option(old), add = TRUE)
+read.csv(path)
+
+# Best: specifically set stringsAsFactors (if not possible use on.exit())
+read.csv(path, stringsAsFactors = FALSE)
+```
+
+## Good practise to clean up with on.exit()
+
+Using on.exit() to set temporary conditions.
+
+```{r}
+f <- function(x) {
+  tmp <- tempfile()
+  on.exit(unlink(tmp), add = TRUE)
+  
+  old_par <- par(bg = "red")
+  on.exit(par(old_par), add = TRUE)
+  
+  plot(1:10)
+}
+```
+
+## Don't mix side-effects and computation
+
+Computation is done in other functions (See also: https://github.com/dgrtwo/broom).
+```{r}
+fortify.lm <- function(model, data = model$model, ...) {
+  infl <- influence(model, do.coef = FALSE)
+  data$.hat <- infl$hat
+  data$.sigma <- infl$sigma
+  data$.cooksd <- cooks.distance(model, infl)
+  data$.fitted <- predict(model)
+  data$.resid <- resid(model)
+  data$.stdresid <- rstandard(model, infl)
+  data
+}
+```
+
+In the next example you see the bad and the good:
+
+Bad
+```{r}
+plot_function <- function(f, xlim = c(0, 1), n = 100) {
+x <- seq(xlim[1], xlim[2], length.out = n)
+y <- f(x)
+print(paste0("Using ", n, " points"))
+par(bg = "grey90")
+plot(x, y, xlab = "x", ylab = "f(x)", type = "l")
+}
+
+plot_function(sin)
+plot(runif(5))
+```
+
+Good
+```{r}
+grid_function <- function(f, xlim = NULL, n = NULL) {
+  
+  if (is.null(xlim)) {
+    xlim <- c(0, 1)
+    message("Using xlim", xlim[1], " - ", xlim[2])
+  } 
+  
+  if (is.null(n)) {
+    n <- 100
+    message("Using ", n, " points")
+  }
+  
+  x <- seq(xlim[1], xlim[2], length.out = n)
+  y <- f(x)
+  
+  data.frame(x, y)
+}
+
+
+plot_function <- function(f, xlim = c(0, 1), n = 100) {
+  
+  fun <- grid_function(f, xlim, n)
+  
+  old_par <- par(bg = "grey90")
+  on.exit(par(old_par), add = TRUE)
+  
+  plot(fun$x, fun$y, xlab = "x", ylab = "f(x)", type = "l")
+}
+
+plot_function(sin)
+plot(runif(5))
+```
+
+## Imports
+
+```{r}
+# In DESCRIPTION
+Imports: dplyr
+
+# In bar.R
+fun_select <- function(df, col) {
+  dplyr::select(df, col)
+}
+```
+
+## Suggests
+
+```{r}
+# In DESCRIPTION
+Suggests: dplyr
+
+# In bar.R
+fun_select <- function(df, col) {
+  if (!requireNamespace("dplyr", quietly = TRUE)) {
+    stop("Need dplyr, please install.")
+  }
+  dplyr::select(df, col)
+}
+
+# NEVER DO install.packages()
+fun_select <- function(df, col) {
+  if (!requireNamespace("dplyr", quietly = TRUE)) {
+    install.packages("dplyr")
+  }
+  dplyr::select(df, col)
+}
+```
+
