@@ -16,6 +16,8 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 
 # Introduction
 
+Personally, there are two main categories of tasks I perform in R. Mostly I analyse specific data and use a blend of manipulation analysis, visualisation and reporting packages to complete a smallish self-contained project. I use RStudio project and R Markdown to organise my work. But more and more do I find myself re-using code. When this happens I've learned it's best to combine that code into packages, even if it's personal and you are the only one using it. Get familiar with writing packages and you'll probably find that in the long run you're a happy programmer in an organised environment.
+
 Six main components of a package:
 
 - Description
@@ -72,7 +74,7 @@ Advice for writing code in a package.
 - Imports  (*) : Packages that it relies on to function. Automatically installed when installing this package.
 - Suggests (*) : Packages that it likes to have around. Not installed automatically.
 
-The reason to use Imports and Suggests instead of library() and require() has to with the fact that library() affescts the search path and the others load a namespace (loadNamespace()) that doesn't.
+The reason to use Imports and Suggests instead of library() and require() has to with the fact that library() affects the search path and the others load a namespace (loadNamespace()) that doesn't.
 
 To add packages to your import or suggest list in the description use use_packages().
 
@@ -82,7 +84,7 @@ devtools::use_package("dplyr")
 devtools::use_package("dplyr", "suggests")
 ```
 
-If you haven't installed thos packages yourself than devtools::load\_all() will fail. It doesn't install the packages for you like install.package() does. Use devtools::install\_deps(deps = TRUE) to install all Imports and Suggests packages.
+If you haven't installed these packages yourself than devtools::load\_all() will fail. It doesn't install the packages for you like install.package() does. Use devtools::install\_deps(deps = TRUE) to install all Imports and Suggests packages.
 
 ```{r}
 devtools::install_deps(deps = TRUE)
@@ -125,14 +127,14 @@ Then, to generate the Rd file.
 devtools::document() # or press 'Ctrl Shift D'
 ```
 
-It's better practise to build entire package and restart R before checking the documentation. Do this by pressing 'Ctrl Shift B'. If that doesn't work, I believe devtools::build() builts the package. 
+It's better practise to build entire package and restart R before checking the documentation. Do this by pressing 'Ctrl Shift B'. If that doesn't work, I believe devtools::build() builds the package. 
 
 You can check the documentation with check\_man(). This returns nothing when it's good. Iterate between check\_man() and document() to fix all errors.
 ```{r}
 devtools::check_man()
 ```
 
-To document other objects chack online.
+To document other objects check online.
 
 - Data              : [r-pkgs.had.co.nz/data.html#documenting-data](http://r-pkgs.had.co.nz/data.html#documenting-data)
 - Classes & Methods : [r-pkgs.had.co.nz/man.html#man-classes](http://r-pkgs.had.co.nz/man.html#man-classes)
@@ -148,7 +150,7 @@ devtools::use_vignette("name")
 
 Open a new R Markdown documents and choose Package Vignette (HTML) from the 'From Templates' option. The output type of the R Markdown document is rmarkdown::html_vignette.
 
-- Modify and preview your file (standard knitr), keyboard shortcut 'Ctrl Shift K', untill your satisfied.
+- Modify and preview your file (standard knitr), keyboard shortcut 'Ctrl Shift K', until your satisfied.
 - Preview whole package with install(build_vignettes = TRUE) and browsevignettes()
 
 ```{r}
@@ -165,7 +167,7 @@ Two types of testing workflow:
 - 3 step iteration: Write code. Load the code with devtools::load_all(). Test code in the console.
 - 2 step iteration: Write code. Run automated tests with devtools::test() (or press 'Ctrl Shift T')
 
-Use the testthat packages to write automated tests. It has expectation functions that will test for an expectation. Use the function test\_that("Description of test",{expectation function}). Expectation functions are in the form expect_*(). Enter two arguments, a function (with it's own arguments) and an expected output.
+Use the testthat packages to write automated tests. It has expectation functions that will test for an expectation. Use the function test\_that("Description of test",{expectation function}). Expectation functions are in the form expect_*(). Enter two arguments, a function (with its own arguments) and an expected output.
 
 - expect\_equal()      : all.equal(), ignores floating point differences
 - expect\_identical()  : identical(), more strict than equal
@@ -218,14 +220,14 @@ You can import all external functions of a package by not adding specific functi
 
 # Release
 
-Before release test your package. R cMD check is an automated test that return errors, warnings and notes. For personal packages make sure to fix all errors it returns, for CRAN packages clear everything. For full documentation see Hadley's [R Packages](http://r-pkgs.had.co.nz/check.html).
+Before release test your package. R CMD check is an automated test that return errors, warnings and notes. For personal packages make sure to fix all errors it returns, for CRAN packages clear everything. For full documentation see Hadley's [R Packages](http://r-pkgs.had.co.nz/check.html).
 
 Run the check through devtools::check() or press 'Ctrl Shift E'.
 ```{r}
 devtools::check()
 ```
 
-If you want to share your package most commonly are CRAN and github.
+If you want to share your package most commonly are CRAN and Github.
 
 **To submit to CRAN:**
 
@@ -249,7 +251,7 @@ Create a cran-comments.md file.
 devtools::use_cran_comments()
 ```
 
-**To submit to github:**
+**To submit to Github:**
 
 Github had a great community that can support your packages. Click [here](http://r-pkgs.had.co.nz/git.html#git) for extensive documentation. Devtools has tools for github:
 
