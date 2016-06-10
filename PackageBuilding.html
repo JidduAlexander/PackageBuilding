@@ -123,6 +123,8 @@ $(document).ready(function () {
 <h1>Notes</h1>
 <ul>
 <li>In this document (*) means that there is a full example of usage in R in the Appendix 1: Examples. The name of the example is the same as the text before (*).</li>
+<li>I’ve learned everything in this post from Hadley Wickham’s books and Master R Developer Workshop. If this post interests you I strongly advise you to buy <a href="http://adv-r.had.co.nz/">Advanced R</a> and <a href="http://r-pkgs.had.co.nz/">R Packages</a>, and to join a workshop.</li>
+<li>In this post I share many keyboard shortcuts for working on Windows. For a complete overview for Mac and Windows press ‘Alt Shift K’ (windows) or ‘Option Shift K’ (Mac) in RStudio or see the backside of the Rstudio IDE Cheat Sheet. This and the Package Development Cheat Sheet are two of many available on the <a href="https://www.rstudio.com/resources/cheatsheets/">RStudio Cheat Sheet üage</a>.</li>
 </ul>
 </div>
 <div id="introduction" class="section level1">
@@ -141,7 +143,7 @@ $(document).ready(function () {
 library(devtools)</code></pre>
 <p>Come up with a name and create your package.</p>
 <p>You can create your package with devtools or RStudio.</p>
-<pre class="r"><code>devtools::create(&quot;path/to/package&quot;)
+<pre class="r"><code>devtools::create(&quot;folderpath/package&quot;)
 devtools::setup(&quot;existing/path/&quot;)</code></pre>
 <p>devtools::create(“name”), creates name.Rproj, and R/ folder for code, a description file, and a namespace.</p>
 <p>Open the Rproj file and work in your project.</p>
@@ -192,26 +194,21 @@ devtools::use_package(&quot;dplyr&quot;, &quot;suggests&quot;)</code></pre>
 <li>Preview help file with ?topicname</li>
 </ul>
 <p>Write your R comments like this:</p>
-<pre class="r"><code>#' Make a discrete random vaiable. (Title Section)
+<pre class="r"><code>#' Function Title (Title Section)
 #'
-#' Returns an object of the type discrete random variable. (Description section)
+#' Fucntion description (Description section)
 #'
-#' Everythin you type is extra detail (Details section)
+#' Function details (Details section)
 #'
-#' @param x a numberic vector giving the values of the random vaiable. (Arguments Section)
-#' @param probs optional, a numeric vector giving the probailities
-#' corresponding to each x value. If not specific, assumes all outcomes
-#' are equally likely (Arguments Section)
-#' @export
-#' @seealso Point to important function for example
-#' @return An S3 objct of class rv. (Describe Outputs Section)
+#' @param x And description of input parameter x (Arguments Section)
+#' @param y And description of input parameter y (Arguments Section)
+#' @export (determines the namespace to be external)
+#' @seealso Point to other important function for example
+#' @return Dsecription of the returned value (Describe Outputs Section)
 #' @examples (Examples Section)
-#' dice &lt;- rv(1:6)
-#' P(dice &gt; 3)
-#' E(dice)
-#' P(dice &gt; dice + 1
-rv &lt;- function(x, probs = NULL) {
-  # Body
+#' a &lt;- fun(x, y)
+fun &lt;- function(x, y = 0) {
+  # Body of function
 }</code></pre>
 <ul>
 <li>You can insert a Roxygen skeleton in the Code tab in RStudio or press ‘Alt Shift R’ (not sure this works)</li>
@@ -231,63 +228,149 @@ rv &lt;- function(x, probs = NULL) {
 </div>
 <div id="vignettes" class="section level1">
 <h1>Vignettes</h1>
+<p>To start a vignette use devtools::use_vignette(“name”). It adds knitr to the Description Suggests and VignettweBuilder. It creates a vignettes folder and drafts vignettes/name.Rmd</p>
+<pre class="r"><code>devtools::use_vignette(&quot;name&quot;)</code></pre>
+<p>Open a new R Markdown documents and choose Package Vignette (HTML) from the ‘From Templates’ option. The output type of the R Markdown document is rmarkdown::html_vignette.</p>
+<ul>
+<li>Modify and preview your file (standard knitr), keyboard shortcut ‘Ctrl Shift K’, untill your satisfied.</li>
+<li>Preview whole package with install(build_vignettes = TRUE) and browsevignettes()</li>
+</ul>
+<pre class="r"><code>devtools::install(build_vignettes = TRUE)
+browseVignettes()</code></pre>
 </div>
 <div id="tests" class="section level1">
 <h1>Tests</h1>
+<p>This section assumes you know how to debug code. traceback(), browser(), options(error = recover), options(warn = 2)</p>
+<p>Two types of testing workflow:</p>
+<ul>
+<li>3 step iteration: Write code. Load the code with devtools::load_all(). Test code in the console.</li>
+<li>2 step iteration: Write code. Run automated tests with devtools::test() (or press ‘Ctrl Shift T’)</li>
+</ul>
+<p>Use the testthat packages to write automated tests. It has expectation functions that will test for an expectation. Use the function test_that(“Description of test”,{expectation function}). Expectation functions are in the form expect_*(). Enter two arguments, a function (with it’s own arguments) and an expected output.</p>
+<ul>
+<li>expect_equal() : all.equal(), ignores floating point differences</li>
+<li>expect_identical() : identical(), more strict than equal</li>
+<li>expect_equivalent() : like equal, but ignores differences in attributes</li>
+<li>expect_is() : inherits from a class</li>
+<li>expect_true() : expects true, also comes as expect_false()</li>
+<li>expect_matches() : any value match the regular expression</li>
+<li>expect_output() : output match regular expression</li>
+<li>expect_message() : expects a message</li>
+<li>expect_warning() : expects a warning</li>
+<li>expect_error() : expects an error</li>
+</ul>
+<pre class="r"><code>test_that(&quot;Expect error if input is not numeric&quot;, {
+expect_error(sum(&quot;a&quot;, 3), &quot;invalid 'type' (character) of argument&quot;)
+})
+test_that(&quot;Expect that the sum of 3 + 4 is 7&quot;, {
+expect_equal(sum(3, 4), 7)
+})</code></pre>
+<p>Good practise:</p>
+<ul>
+<li>When you find a bug, be able to reproduce it. Write a test for it, because the bug might ‘creep’ back into your code in future changes.</li>
+<li>Test complicated parts of your code.</li>
+</ul>
 </div>
 <div id="namespace" class="section level1">
 <h1>Namespace</h1>
+<p>Divides functions into two types:</p>
+<ul>
+<li>Internal - Used by package only - Optional documentation - Easy to adapt/change</li>
+<li>External - Used by outside users - Requires documentation - Others depend on you not changing it</li>
+</ul>
+<p>See the ‘Man’ section for Roxygen code to create an external function.</p>
+<pre class="r"><code>#' @export</code></pre>
+<p>The namespace also allows you to import functions. This means that you don’t have to write ‘packagename::’ and also allows you import infix functions (think %&gt;%). Use #’ <span class="citation">@importFrom</span> Packagename function. You can create a R/imports.R file to organise this. For example, if you want to package the <a href="http://www.jiddualexander.com/blog/managing-multiple-learning-curves/">Manage Multiple Models</a> methods you might want R/imports.R:</p>
+<pre class="r"><code>#' @importFrom magrittr %&gt;%
+#' @importFrom dplyr group_by 
+#' @importFrom tidyr nest and unnest
+#' @importFrom purrr map
+#' @importFrom broom tidy glance augment
+NULL</code></pre>
+<p>You can import all external functions of a package by not adding specific functions to the call. This could be dangerous because you do not know all (future) functions of that package and names may clash.</p>
 </div>
 <div id="release" class="section level1">
 <h1>Release</h1>
+<p>Before release test your package. R cMD check is an automated test that return errors, warnings and notes. For personal packages make sure to fix all errors it returns, for CRAN packages clear everything. For full documentation see Hadley’s <a href="http://r-pkgs.had.co.nz/check.html">R Packages</a>.</p>
+<p>Run the check through devtools::check() or press ‘Ctrl Shift E’.</p>
+<pre class="r"><code>devtools::check()</code></pre>
+<p>If you want to share your package most commonly are CRAN and github.</p>
+<p><strong>To submit to CRAN:</strong></p>
+<ul>
+<li>Iterate devtools::check() till you fixed all errors, warnings and notes are gone.</li>
+<li>Iterate devtools::build_win() to check with R-Devel on Windows.</li>
+<li>Release to CRAN devtools::release()</li>
+<li>Create cran-comments.Rd file with devtools::use_cran_comments()</li>
+</ul>
+<p>Check with R-devel.</p>
+<pre class="r"><code>devtools::build_win()</code></pre>
+<p>Release.</p>
+<pre class="r"><code>devtools::release()</code></pre>
+<p>Create a cran-comments.md file.</p>
+<pre class="r"><code>devtools::use_cran_comments()</code></pre>
+<p><strong>To submit to github:</strong></p>
+<p>Github had a great community that can support your packages. Click <a href="http://r-pkgs.had.co.nz/git.html#git">here</a> for extensive documentation. Devtools has tools for github:</p>
+<ul>
+<li>install_github() : install packages from github</li>
+<li>use_git() :</li>
+<li>use_github() :</li>
+<li>use_travis() : runs automated testing for every push to github</li>
+<li>use_coverage() :</li>
+</ul>
 </div>
 <div id="appendix-1-examples" class="section level1">
 <h1>Appendix 1: Examples</h1>
 <div id="avoid-print-instead-use-message" class="section level2">
 <h2>Avoid print() instead use message()</h2>
-<pre class="r"><code>if (!quiet) {
-message(&quot;Processing file &quot;, path)
-}
-if (is.null(by)) {
-by &lt;- ...
-message(&quot;Joining by &quot;, paste(by, collapse = &quot;, &quot;))
+<pre class="r"><code>fun &lt;- function(x = 3, quiet = NULL, ...) {
+
+  if (!quiet) message(&quot;Your message&quot;, x)
+
+  if (is.null(x)) {
+    by &lt;- ...
+    message(&quot;Joining by &quot;, paste(by, collapse = &quot;, &quot;))
+  }
 }</code></pre>
 </div>
 <div id="isolate-options-with-on.exit" class="section level2">
 <h2>Isolate options with on.exit()</h2>
-<pre class="r"><code># Bad!
+<pre class="r"><code># Don't set these options globally. Not good:
 options(stringsAsFactors = FALSE)
 read.csv(path)
-# Better
+
+# Using on.exit() always executes before the function end, so it's okay.
 old &lt;- options(stringsAsFactors = FALSE)
 on.exit(option(old), add = TRUE)
 read.csv(path)
-# Best: use stringsAsFactors arguments to specific
-# functions (not always possible)
+
+# Best: specifically set stringsAsFactors (if not possible use on.exit())
 read.csv(path, stringsAsFactors = FALSE)</code></pre>
 </div>
 <div id="good-practise-to-clean-up-with-on.exit" class="section level2">
 <h2>Good practise to clean up with on.exit()</h2>
+<p>Using on.exit() to set temporary conditions.</p>
 <pre class="r"><code>f &lt;- function(x) {
-tmp &lt;- tempfile()
-on.exit(unlink(tmp), add = TRUE)
-old_par &lt;- par(bg = &quot;red&quot;)
-on.exit(par(old_par), add = TRUE)
-plot(1:10)
+  tmp &lt;- tempfile()
+  on.exit(unlink(tmp), add = TRUE)
+  
+  old_par &lt;- par(bg = &quot;red&quot;)
+  on.exit(par(old_par), add = TRUE)
+  
+  plot(1:10)
 }</code></pre>
 </div>
 <div id="dont-mix-side-effects-and-computation" class="section level2">
 <h2>Don’t mix side-effects and computation</h2>
 <p>Computation is done in other functions (See also: <a href="https://github.com/dgrtwo/broom" class="uri">https://github.com/dgrtwo/broom</a>).</p>
 <pre class="r"><code>fortify.lm &lt;- function(model, data = model$model, ...) {
-infl &lt;- influence(model, do.coef = FALSE)
-data$.hat &lt;- infl$hat
-data$.sigma &lt;- infl$sigma
-data$.cooksd &lt;- cooks.distance(model, infl)
-data$.fitted &lt;- predict(model)
-data$.resid &lt;- resid(model)
-data$.stdresid &lt;- rstandard(model, infl)
-data
+  infl &lt;- influence(model, do.coef = FALSE)
+  data$.hat &lt;- infl$hat
+  data$.sigma &lt;- infl$sigma
+  data$.cooksd &lt;- cooks.distance(model, infl)
+  data$.fitted &lt;- predict(model)
+  data$.resid &lt;- resid(model)
+  data$.stdresid &lt;- rstandard(model, infl)
+  data
 }</code></pre>
 <p>In the next example you see the bad and the good:</p>
 <p>Bad</p>
@@ -337,32 +420,32 @@ plot(runif(5))</code></pre>
 <div id="imports" class="section level2">
 <h2>Imports</h2>
 <pre class="r"><code># In DESCRIPTION
-Imports: foo
+Imports: dplyr
 
 # In bar.R
-new_function &lt;- function(x, y, z) {
-foo::bar(x, y) + z
+fun_select &lt;- function(df, col) {
+  dplyr::select(df, col)
 }</code></pre>
 </div>
 <div id="suggests" class="section level2">
 <h2>Suggests</h2>
 <pre class="r"><code># In DESCRIPTION
-Suggests: foo
+Suggests: dplyr
 
 # In bar.R
-new_function &lt;- function(x, y, z) {
-if (!requireNamespace(&quot;foo&quot;, quietly = TRUE)) {
-stop(&quot;Need foo!&quot;)
-}
-foo::bar(x, y) + z
+fun_select &lt;- function(df, col) {
+  if (!requireNamespace(&quot;dplyr&quot;, quietly = TRUE)) {
+    stop(&quot;Need dplyr, please install.&quot;)
+  }
+  dplyr::select(df, col)
 }
 
 # NEVER DO install.packages()
-new_function &lt;- function(x, y, z) {
-if (!requireNamespace(&quot;foo&quot;, quietly = TRUE)) {
-install.packages(&quot;foo&quot;)
-}
-foo::bar(x, y) + z
+fun_select &lt;- function(df, col) {
+  if (!requireNamespace(&quot;dplyr&quot;, quietly = TRUE)) {
+    install.packages(&quot;dplyr&quot;)
+  }
+  dplyr::select(df, col)
 }</code></pre>
 </div>
 </div>
