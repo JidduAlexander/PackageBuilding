@@ -203,10 +203,60 @@ See the 'Man' section for Roxygen code to create an external function.
 #' @export
 ```
 
+The namespace also allows you to import functions. This means that you don't have to write 'packagename::' and also allows you import infix functions (think %>%). Use #' @importFrom Packagename function. You can create a R/imports.R file to organise this. For example, if you want to package the [Manage Multiple Models](http://www.jiddualexander.com/blog/managing-multiple-learning-curves/) methods you might want R/imports.R:
+```{r}
+#' @importFrom magrittr %>%
+#' @importFrom dplyr group_by 
+#' @importFrom tidyr nest and unnest
+#' @importFrom purrr map
+#' @importFrom broom tidy glance augment
+NULL
+```
 
+You can import all external functions of a package by not adding specific functions to the call. This could be dangerous because you do not know all (future) functions of that package and names may clash.
 
 # Release
 
+Before release test your package. R cMD check is an automated test that return errors, warnings and notes. For personal packages make sure to fix all errors it returns, for CRAN packages clear everything. For full documentation see Hadley's [R Packages](http://r-pkgs.had.co.nz/check.html).
+
+Run the check through devtools::check() or press 'Ctrl Shift E'.
+```{r}
+devtools::check()
+```
+
+If you want to share your package most commonly are CRAN and github.
+
+**To submit to CRAN:**
+
+- Iterate devtools::check() till you fixed all errors, warnings and notes are gone.
+- Iterate devtools::build_win() to check with R-Devel on Windows.
+- Release to CRAN devtools::release()
+- Create cran-comments.Rd file with devtools::use\_cran\_comments()
+
+Check with R-devel.
+```{r}
+devtools::build_win()
+```
+
+Release.
+```{r}
+devtools::release()
+```
+
+Create a cran-comments.md file.
+```{r}
+devtools::use_cran_comments()
+```
+
+**To submit to github:**
+
+Github had a great community that can support your packages. Click [here](http://r-pkgs.had.co.nz/git.html#git) for extensive documentation. Devtools has tools for github:
+
+- install_github() : install packages from github
+- use_git()        :
+- use_github()     :
+- use_travis()     : runs automated testing for every push to github
+- use_coverage()   :
 
 # Appendix 1: Examples
 
